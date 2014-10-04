@@ -13,13 +13,26 @@ public class RateMonotonicScheduling {
 
 	private Task taskPool[];
 	private boolean finished[];
+	private int burstTime[];
+	private int arrivalTime[];
 	
-	private double tat, atat, wt, awt;
+	private double tat, wt;
+	
 
 	public RateMonotonicScheduling(Task... taskPool) {
 		this.taskPool = taskPool;
 		finished = new boolean[taskPool.length];
-
+		
+		burstTime = new int[taskPool.length];
+		arrivalTime = new int[taskPool.length];
+		
+		for(int i=0; i<taskPool.length; i++){
+			
+			arrivalTime[i] = taskPool[i].arrivalTime;
+			burstTime[i] = taskPool[i].burstTime;
+			
+		}
+		
 		calculateBoundary(taskPool.length);
 		calculateLimitSummation(taskPool);
 	}
@@ -31,8 +44,14 @@ public class RateMonotonicScheduling {
 				if(--taskPool[currentIndex].burstTime == 0) {
 					finished[currentIndex] = true;
 					
-					if(taskPool[currentIndex].deadlineTime >= time) 
+					if(taskPool[currentIndex].deadlineTime >= time){
 						System.out.println(taskPool[currentIndex] + " finished at time " + (time+1) + " within deadline : " + taskPool[currentIndex].deadlineTime);
+						
+						wt += (time - burstTime[currentIndex] - arrivalTime[currentIndex]);
+						tat += (time - arrivalTime[currentIndex]);
+						System.out.println("Waiting Time: " + wt);
+						System.out.println("Turnaround Time: " + tat);
+					}
 					else
 						System.out.println(taskPool[currentIndex] + " finished at time " + (time+1) + " exceeding deadline : " + taskPool[currentIndex].deadlineTime);
 					
@@ -41,12 +60,22 @@ public class RateMonotonicScheduling {
 				else {
 					System.out.println("Time " + (time+1) + ": " + taskPool[currentIndex]);
 				}
+				
+				
 			}
 			else {
 				System.out.println("-1 as index at time " + time);
 			}
 			currentIndex = searchNextExecutableTaskAtTime();
 		}
+		
+		wt += taskPool.length;
+		tat += taskPool.length;
+		
+		System.out.println("Waiting Time: " + wt);
+		System.out.println("Average Waiting Time: " + (wt/taskPool.length));
+		System.out.println("Turnaround Time: " + tat);
+		System.out.println("Average Turnaround Time: " + (tat/taskPool.length));
 
 	}
 
