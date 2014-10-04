@@ -49,8 +49,7 @@ public class RateMonotonicScheduling {
 						
 						wt += (time - burstTime[currentIndex] - arrivalTime[currentIndex]);
 						tat += (time - arrivalTime[currentIndex]);
-						System.out.println("Waiting Time: " + wt);
-						System.out.println("Turnaround Time: " + tat);
+					
 					}
 					else
 						System.out.println(taskPool[currentIndex] + " finished at time " + (time+1) + " exceeding deadline : " + taskPool[currentIndex].deadlineTime);
