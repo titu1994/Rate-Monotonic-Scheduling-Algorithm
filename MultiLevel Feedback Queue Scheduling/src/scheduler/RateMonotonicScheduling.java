@@ -13,6 +13,8 @@ public class RateMonotonicScheduling {
 
 	private Task taskPool[];
 	private boolean finished[];
+	
+	private double tat, atat, wt, awt;
 
 	public RateMonotonicScheduling(Task... taskPool) {
 		this.taskPool = taskPool;
