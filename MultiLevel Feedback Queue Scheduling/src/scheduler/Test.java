@@ -10,7 +10,6 @@ public class Test {
 		
 		RateMonotonicScheduling scheduler = new RateMonotonicScheduling(t1,t2,t3);
 		scheduler.executeTasks();
-
 	}
 
 }
