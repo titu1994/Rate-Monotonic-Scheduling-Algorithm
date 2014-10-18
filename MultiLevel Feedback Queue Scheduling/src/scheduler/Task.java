@@ -21,6 +21,10 @@ public class Task implements Comparable<Task> {
 		return burstTime - o.burstTime;
 	}
 	
+	public int getId() {
+		return id;
+	}
+
 	@Override
 	public boolean equals(Object obj) {
 		Task t = (Task) obj;
