@@ -25,8 +25,8 @@ public class TaskAddUIClass extends JFrame {
 		setExtendedState(JFrame.MAXIMIZED_BOTH);
 		setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 		getContentPane().setLayout(null);
+		pack();
 		setupUI();
-		
 	}
 	
 	private void setupUI() {

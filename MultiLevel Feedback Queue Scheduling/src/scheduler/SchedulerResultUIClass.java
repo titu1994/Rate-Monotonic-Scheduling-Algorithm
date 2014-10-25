@@ -8,6 +8,7 @@ import javax.swing.JTable;
 import javax.swing.WindowConstants;
 import javax.swing.table.AbstractTableModel;
 
+import scheduler.RateMonotonicScheduling.GanttChartHolder;
 import scheduler.RateMonotonicScheduling.RateMonotonicSchedulerListener;
 
 public class SchedulerResultUIClass extends JFrame implements RateMonotonicSchedulerListener {
@@ -17,16 +18,21 @@ public class SchedulerResultUIClass extends JFrame implements RateMonotonicSched
 	private ArrayList<DisplayClass> displayList;
 	private DataModel model;
 	
+	private ArrayList<GanttDisplayClass> ganttChart;
+	private GanttChartModel chartModel;
+	
 	private JLabel boundaryLabel, limitLabel, wtLabel, awtLabel, atatLabel, tatLabel, areAllScheduleLabel;
 	private JLabel boundaryLabelVal, limitLabelVal, wtLabelVal, awtLabelVal, atatLabelVal, tatLabelVal, areAllScheduleVal;
-	private JTable table;
+	private JTable table, gtable;
 	
 	public SchedulerResultUIClass() {
 		displayList = new ArrayList<DisplayClass>();
+		ganttChart = new ArrayList<GanttDisplayClass>();
 		
 		setExtendedState(JFrame.MAXIMIZED_BOTH);
 		setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 		getContentPane().setLayout(null);
+		pack();
 		
 		setupData();
 	}
@@ -102,10 +108,10 @@ public class SchedulerResultUIClass extends JFrame implements RateMonotonicSched
 		getContentPane().add(atatLabelVal);
 		
 		areAllScheduleLabel.setBounds(0, 300, 200, 50);
-		areAllScheduleLabel.setText("Are all schedulable:");
+		areAllScheduleLabel.setText("Are may be schedulable:");
 		getContentPane().add(areAllScheduleLabel);
 		
-		areAllScheduleVal.setBounds(200, 300, 100, 50);
+		areAllScheduleVal.setBounds(175, 300, 75, 50);
 		areAllScheduleVal.setText("-");
 		getContentPane().add(areAllScheduleVal);
 		
@@ -123,10 +129,13 @@ public class SchedulerResultUIClass extends JFrame implements RateMonotonicSched
 		
 		model = new DataModel();
 		table = new JTable(model);
-		table.setBounds(300, 0, 800, 800);
+		table.setBounds(250, 0, 700, 800);
 		table.setVisible(true);
 		getContentPane().add(table);
+		
 	}
+
+	
 
 	@Override
 	public void taskFinished(Task task, int burstTime, int arrivalTime, int time, boolean withinDeadline) {
@@ -176,9 +185,6 @@ public class SchedulerResultUIClass extends JFrame implements RateMonotonicSched
 	
 	private class DataModel extends AbstractTableModel {
 
-		/**
-		 * 
-		 */
 		private static final long serialVersionUID = -1962279468479145799L;
 
 		@Override
@@ -205,6 +211,73 @@ public class SchedulerResultUIClass extends JFrame implements RateMonotonicSched
 				return displayList.get(row).time; 
 			else 
 				return displayList.get(row).completedOnTime; 
+		}
+
+		@Override
+		public boolean isCellEditable(int rowIndex, int columnIndex) {
+			return false;
+		}
+	}
+
+	private void ganttChartSetup() {
+		GanttDisplayClass g = new GanttDisplayClass();
+		g.beginningTime = "Beginning Time";
+		g.processingID = "Process ID";
+		g.endingTime = "Ending ID";
+		ganttChart.add(g);
+		
+		chartModel = new GanttChartModel();
+		gtable = new JTable(chartModel);
+		gtable.setBounds(1000, 0, 400, 800);
+		gtable.setVisible(true);
+		getContentPane().add(gtable);
+	}
+	
+	@Override
+	public void ganttChartData(ArrayList<GanttChartHolder> ganttChart) {
+		GanttDisplayClass c;
+		this.ganttChart.clear();
+		ganttChartSetup();
+		for(GanttChartHolder h : ganttChart) {
+			c = new GanttDisplayClass();
+			c.beginningTime = h.beginningTime + "";
+			c.processingID = h.processID;
+			c.endingTime = h.endingTime + "";
+			this.ganttChart.add(c);
+		}
+		
+		chartModel.fireTableDataChanged();
+	}
+	
+	private class GanttDisplayClass {
+		String beginningTime;
+		String processingID;
+		String endingTime;
+	}
+	
+	private class GanttChartModel extends AbstractTableModel {
+		private static final long serialVersionUID = 986372630206296186L;
+
+		@Override
+		public int getColumnCount() {
+			return 3;
+		}
+
+		@Override
+		public int getRowCount() {
+			return ganttChart.size();
+		}
+
+		@Override
+		public Object getValueAt(int row, int col) {
+			if(col == 0) 
+				return ganttChart.get(row).beginningTime + "";
+			else if(col == 1) 
+				return ganttChart.get(row).processingID; 
+			else if(col == 2) 
+				return ganttChart.get(row).endingTime + ""; 
+			else 
+				return -1;
 		}
 
 		@Override

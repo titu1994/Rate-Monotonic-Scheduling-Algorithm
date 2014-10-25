@@ -1,5 +1,6 @@
 package scheduler;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 public class RateMonotonicScheduling {
@@ -20,6 +21,10 @@ public class RateMonotonicScheduling {
 	private RateMonotonicSchedulerListener listener;
 	private int offset;
 
+	private ArrayList<GanttChartHolder> ganttChart;
+	private GanttChartHolder ganttTemp;
+	private boolean ganttUpdated = false;
+
 	public RateMonotonicScheduling(Task... taskPool) {
 		this.taskPool = taskPool;
 		finished = new boolean[taskPool.length];
@@ -27,15 +32,17 @@ public class RateMonotonicScheduling {
 		burstTime = new int[taskPool.length];
 		arrivalTime = new int[taskPool.length];
 
+		this.ganttChart = new ArrayList<GanttChartHolder>();
+
 		boolean startZeroTest = false;
 		for(int i=0; i<taskPool.length; i++){
 			arrivalTime[i] = taskPool[i].arrivalTime;
-			
-			
+
+
 			if(arrivalTime[i] == 0)
 				startZeroTest = true;
 		}
-		
+
 		if(!startZeroTest)
 			compensateForZero();
 
@@ -49,14 +56,18 @@ public class RateMonotonicScheduling {
 		for(int i = 0; i < taskPool.length; i++)
 			if(min > taskPool[i].arrivalTime)
 				min = taskPool[i].arrivalTime;
-		
+
 		//Change time factor from 0 to whatever time we virtually begin at
 		time = min;
 		offset = min;
-		//Compensate the arrival time for the new start time
-		/*for(int i = 0; i < taskPool.length; i++) {
-			taskPool[i].arrivalTime -= min;
-		}*/
+
+		if(min != 0) {
+			GanttChartHolder holder = new GanttChartHolder();
+			holder.beginningTime = 0;
+			holder.endingTime = min;
+			holder.processID = "Null";
+			ganttChart.add(holder);
+		}
 	}
 
 	public void executeTasks() {
@@ -65,6 +76,16 @@ public class RateMonotonicScheduling {
 			if(currentIndex != -1) {
 				if(--taskPool[currentIndex].burstTime == 0) {
 					finished[currentIndex] = true;
+
+					ganttTemp.endingTime = time + 1;
+					ganttTemp.processID = "Process " + taskPool[currentIndex].getId();
+					ganttChart.add(ganttTemp);
+					System.out.println("Finished : " + ganttTemp);
+
+					ganttTemp = new GanttChartHolder();
+					System.out.println("Current Time : " + time);
+					ganttTemp.beginningTime = time + 1;
+					ganttUpdated = true;
 
 					if(taskPool[currentIndex].deadlineTime >= time){
 						System.out.println(taskPool[currentIndex] + " finished at time " + (time+1) + " within deadline : " + taskPool[currentIndex].deadlineTime);
@@ -81,6 +102,7 @@ public class RateMonotonicScheduling {
 						if(listener != null)
 							listener.taskFinished(taskPool[currentIndex], burstTime[currentIndex], arrivalTime[currentIndex], (time+1), false);
 					}
+					taskPool[currentIndex].burstTime = 65535;
 					findNextCurrent();
 				}
 				else {
@@ -94,7 +116,7 @@ public class RateMonotonicScheduling {
 			else {
 				System.out.println("-1 as index at time " + (time+1));
 			}
-			
+
 			currentIndex = searchNextExecutableTaskAtTime();
 		}
 
@@ -106,14 +128,21 @@ public class RateMonotonicScheduling {
 		System.out.println("Turnaround Time: " + tat);
 		System.out.println("Average Turnaround Time: " + (tat/taskPool.length));
 
-		if(listener != null)
+		if(listener != null) {
 			listener.AwtAndAtat(wt, wt/taskPool.length, tat, tat/taskPool.length);
+			listener.ganttChartData(ganttChart);
+		}
 
 	}
 
 	private void findNextCurrent() {
+		if(!ganttUpdated) {
+			ganttTemp = new GanttChartHolder();
+			ganttTemp.beginningTime = time;
+			ganttUpdated = false;
+		}
 		for(int i = 0; i < taskPool.length; i++) {
-			if(!finished[i] && taskPool[i].arrivalTime <= time) {
+			if(!finished[i] && taskPool[i].arrivalTime <= (time)) {
 				currentIndex = i;
 				break;
 			}
@@ -122,8 +151,22 @@ public class RateMonotonicScheduling {
 
 	private int searchNextExecutableTaskAtTime() {
 		for(int i = 0; i < taskPool.length; i++) {
-			if(!finished[i] && taskPool[i].arrivalTime <= time && taskPool[i].burstTime <= taskPool[currentIndex].burstTime) 
+			if(!finished[i] && taskPool[i].arrivalTime <= (time + 1) && taskPool[i].burstTime <= taskPool[currentIndex].burstTime) {
+				if(i != currentIndex) {
+					if(ganttTemp.beginningTime != (time + 1)) {
+						ganttTemp.endingTime = time+1;
+						ganttTemp.processID = "Process " + taskPool[currentIndex].getId();
+						ganttChart.add(ganttTemp);
+
+						System.out.println("Changed : " + ganttTemp);
+
+						ganttTemp = new GanttChartHolder();
+						ganttTemp.beginningTime = time+1;
+					}
+				}
+
 				return i;
+			}
 		}
 		return -1;
 	}
@@ -145,10 +188,9 @@ public class RateMonotonicScheduling {
 			burstTime[i] = taskPool[i].burstTime;
 			arrivalTime[i] = taskPool[i].arrivalTime;
 		}
-	
-		
+
 		for(int i = 0; i < tasks.length; i++) {
-			if(!isSchedulable(tasks[i])) {
+			if(isSchedulable(tasks[i])) {
 				areAllSchedulable &= true;
 			}
 			else {
@@ -166,13 +208,24 @@ public class RateMonotonicScheduling {
 	private boolean isSchedulable(Task test) {
 		double limitCopy = limitSummation;
 		limitCopy += (test.burstTime/(double)test.deadlineTime);
+		limitSummation = limitCopy;
 
 		if(limitCopy <= boundary) {
-			limitSummation = limitCopy;
 			return true;
 		}
 		else {
 			return false;
+		}
+	}
+
+	public class GanttChartHolder {
+		public int beginningTime;
+		public int endingTime;
+		public String processID;
+
+		@Override
+		public String toString() {
+			return "|" + beginningTime + " - " + processID + " - " + endingTime + "|" ;
 		}
 	}
 
@@ -186,6 +239,7 @@ public class RateMonotonicScheduling {
 		void taskLimit(double limit);
 		void taskSchedulability(boolean areAllSchedulable);
 		void AwtAndAtat(double waitingTime, double awt, double turnaroundTime, double atat);
+		void ganttChartData(ArrayList<GanttChartHolder> ganttChart);
 	}
 
 }
