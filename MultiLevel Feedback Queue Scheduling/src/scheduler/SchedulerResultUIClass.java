@@ -58,12 +58,12 @@ public class SchedulerResultUIClass extends JFrame implements RateMonotonicSched
 		tableSetup();
 		
 		//Labels
-		boundaryLabel.setText("Boudary:");
-		boundaryLabel.setBounds(0, 0, 50, 50);
+		boundaryLabel.setText("Utilisation Boudary:");
+		boundaryLabel.setBounds(0, 0, 150, 50);
 		getContentPane().add(boundaryLabel);
 		
-		limitLabel.setText("Limit:");
-		limitLabel.setBounds(0, 50, 50, 50);
+		limitLabel.setText("Utilisation Limit:");
+		limitLabel.setBounds(0, 50, 150, 50);
 		getContentPane().add(limitLabel);
 		
 		wtLabel.setText("Waiting Time:");
@@ -84,11 +84,11 @@ public class SchedulerResultUIClass extends JFrame implements RateMonotonicSched
 		
 		//Values
 		boundaryLabelVal.setText("-");
-		boundaryLabelVal.setBounds(50, 0, 100, 50);
+		boundaryLabelVal.setBounds(150, 0, 100, 50);
 		getContentPane().add(boundaryLabelVal);
 		
 		limitLabelVal.setText("-");
-		limitLabelVal.setBounds(50, 50, 100, 50);
+		limitLabelVal.setBounds(150, 50, 100, 50);
 		getContentPane().add(limitLabelVal);
 		
 		wtLabelVal.setText("-");
@@ -108,7 +108,7 @@ public class SchedulerResultUIClass extends JFrame implements RateMonotonicSched
 		getContentPane().add(atatLabelVal);
 		
 		areAllScheduleLabel.setBounds(0, 300, 200, 50);
-		areAllScheduleLabel.setText("Are may be schedulable:");
+		areAllScheduleLabel.setText("All may be schedulable:");
 		getContentPane().add(areAllScheduleLabel);
 		
 		areAllScheduleVal.setBounds(175, 300, 75, 50);
@@ -223,7 +223,7 @@ public class SchedulerResultUIClass extends JFrame implements RateMonotonicSched
 		GanttDisplayClass g = new GanttDisplayClass();
 		g.beginningTime = "Beginning Time";
 		g.processingID = "Process ID";
-		g.endingTime = "Ending ID";
+		g.endingTime = "Ending Time";
 		ganttChart.add(g);
 		
 		chartModel = new GanttChartModel();
