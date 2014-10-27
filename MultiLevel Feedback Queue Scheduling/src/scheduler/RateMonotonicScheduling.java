@@ -38,7 +38,6 @@ public class RateMonotonicScheduling {
 		for(int i=0; i<taskPool.length; i++){
 			arrivalTime[i] = taskPool[i].arrivalTime;
 
-
 			if(arrivalTime[i] == 0)
 				startZeroTest = true;
 		}
@@ -92,9 +91,6 @@ public class RateMonotonicScheduling {
 
 						if(listener != null)
 							listener.taskFinished(taskPool[currentIndex], burstTime[currentIndex], arrivalTime[currentIndex], (time+1), true);
-
-						wt += (time - burstTime[currentIndex] - arrivalTime[currentIndex]);
-						tat += (time - arrivalTime[currentIndex]);
 					}
 					else {
 						System.out.println(taskPool[currentIndex] + " finished at time " + (time+1) + " exceeding deadline : " + taskPool[currentIndex].deadlineTime);
@@ -102,6 +98,8 @@ public class RateMonotonicScheduling {
 						if(listener != null)
 							listener.taskFinished(taskPool[currentIndex], burstTime[currentIndex], arrivalTime[currentIndex], (time+1), false);
 					}
+					wt += (time - burstTime[currentIndex] - arrivalTime[currentIndex]);
+					tat += (time - arrivalTime[currentIndex]);
 					taskPool[currentIndex].burstTime = 65535;
 					findNextCurrent();
 				}
